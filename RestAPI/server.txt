@@ -1,0 +1,67 @@
+const express = require("express");
+const cors = require("cors");
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+let books = [];
+let idCounter = 1;
+
+app.get("/books", (req, res) => {
+    res.send(books);
+});
+
+app.post("/books", (req, res) => {
+    const { title, author, price } = req.body;
+
+    const newBook = {
+        id: idCounter++,
+        title,
+        author,
+        price
+    };
+
+    books.push(newBook);
+
+    res.send(`Book "${title}" added successfully`);
+});
+
+
+app.put("/books/:id", (req, res) => {
+    const id = parseInt(req.params.id);
+    const { title, author, price } = req.body;
+
+    const book = books.find(b => b.id === id);
+
+    if (!book) {
+        return res.status(404).send("Book not found");
+    }
+
+    book.title = title;
+    book.author = author;
+    book.price = price;
+
+    res.send(`Book with id ${id} updated successfully`);
+});
+
+app.delete("/books/:id", (req, res) => {
+    const id = parseInt(req.params.id);
+
+    const index = books.findIndex(b => b.id === id);
+
+    if (index === -1) {
+        return res.status(404).send("Book not found");
+    }
+
+    books.splice(index, 1);
+
+    res.send(`Book with id ${id} deleted successfully`);
+});
+
+
+app.listen(3000, () => {
+    console.log("Server is listening at 3000");
+});
+
+module.exports = app;
