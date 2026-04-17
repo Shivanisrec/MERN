@@ -1,0 +1,53 @@
+const express = require("express");
+const jwt = require("jsonwebtoken");
+const cors = require("cors");
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+const SECRET = "abc123";
+
+// ✅ LOGIN
+app.post("/login", (req, res) => {
+    const username = req.body.username;
+
+    let role = "student";
+    if (username === "admin") role = "admin";
+
+    const token = jwt.sign({ username, role }, SECRET);
+
+    res.json({ token });
+});
+
+// ✅ MIDDLEWARE
+function checkToken(req, res, next) {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) return res.send("No token");
+
+    const token = authHeader.split(" ")[1];
+
+    try {
+        const user = jwt.verify(token, SECRET);
+        req.user = user;
+        next();
+    } catch {
+        res.send("Invalid token");
+    }
+}
+
+// ✅ PROTECTED API
+app.get("/students", checkToken, (req, res) => {
+
+    if (req.user.role !== "admin") {
+        return res.send("Only admin allowed");
+    }
+
+    res.json([
+        { name: "Arun", dept: "CSE" },
+        { name: "Meena", dept: "IT" }
+    ]);
+});
+
+app.listen(3000, () => console.log("Server running"));
