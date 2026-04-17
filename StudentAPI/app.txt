@@ -1,0 +1,55 @@
+import React, { useState } from "react";
+import axios from "axios";
+
+function App() {
+
+  const [username, setUsername] = useState("");
+  const [token, setToken] = useState("");
+  const [students, setStudents] = useState([]);
+
+  
+  const login = () => {
+    axios.post("http://localhost:3000/login", { username })
+      .then(res => setToken(res.data.token));
+  };
+
+ 
+  const getStudents = () => {
+    axios.get("http://localhost:3000/students", {
+      headers: { Authorization: "Bearer " + token }
+    })
+    .then(res => {
+      if (Array.isArray(res.data)) {
+        setStudents(res.data);
+      } else {
+        alert(res.data);
+      }
+    })
+    .catch(() => alert("Error"));
+  };
+
+  return (
+    <div style={{ textAlign: "center" }}>
+      <h2>Login</h2>
+
+      <input
+        placeholder="Enter username"
+        onChange={(e) => setUsername(e.target.value)}
+      />
+
+      <button onClick={login}>Login</button>
+
+      <br /><br />
+
+      <button onClick={getStudents}>Get Students</button>
+
+      <ul>
+        {students.map((s, i) => (
+          <li key={i}>{s.name} - {s.dept}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default App;
